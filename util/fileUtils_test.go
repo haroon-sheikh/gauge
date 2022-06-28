@@ -15,7 +15,6 @@ import (
 
 	"github.com/getgauge/gauge/config"
 	"github.com/getgauge/gauge/env"
-	. "gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -234,7 +233,7 @@ func (s *MySuite) TestGetPathToFileInGaugeDataDir(c *C) {
 	var path string
 	config.ProjectRoot = "PROJECT_ROOT"
 	oldGaugeDataDirFn := env.GaugeDataDir
-	defer func(fn func() string) {env.GaugeDataDir = fn }(oldGaugeDataDirFn)
+	defer func(fn func() string) { env.GaugeDataDir = fn }(oldGaugeDataDirFn)
 	env.GaugeDataDir = func() string { return "foo" }
 
 	absPath, _ := filepath.Abs("foo.csv")
@@ -246,7 +245,7 @@ func (s *MySuite) TestGetPathToAbsFileWithGaugeDataDir(c *C) {
 	var path string
 	config.ProjectRoot = "PROJECT_ROOT"
 	oldGaugeDataDirFn := env.GaugeDataDir
-	defer func(fn func() string	) {env.GaugeDataDir = fn }(oldGaugeDataDirFn)
+	defer func(fn func() string) { env.GaugeDataDir = fn }(oldGaugeDataDirFn)
 	env.GaugeDataDir = func() string { return "foo" }
 
 	path = GetPathToFile("foo.csv")
@@ -259,7 +258,7 @@ func (s *MySuite) TestGetSpecFilesWhenSpecsDirDoesNotExists(c *C) {
 		expectedErrorMessage = message
 	}
 	GetSpecFiles([]string{"dir1"})
-	c.Assert(expectedErrorMessage, Equals, "Specs directory dir1 does not exists.")
+	c.Assert(expectedErrorMessage, Equals, "Specs directory dir1 does not exist.")
 }
 
 func (s *MySuite) TestGetSpecFilesWhenSpecsDirIsEmpty(c *C) {
