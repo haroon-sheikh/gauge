@@ -15,6 +15,7 @@ import (
 
 	"github.com/getgauge/gauge/config"
 	"github.com/getgauge/gauge/env"
+	. "gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -233,7 +234,7 @@ func (s *MySuite) TestGetPathToFileInGaugeDataDir(c *C) {
 	var path string
 	config.ProjectRoot = "PROJECT_ROOT"
 	oldGaugeDataDirFn := env.GaugeDataDir
-	defer func(fn func() string) { env.GaugeDataDir = fn }(oldGaugeDataDirFn)
+	defer func(fn func() string) {env.GaugeDataDir = fn }(oldGaugeDataDirFn)
 	env.GaugeDataDir = func() string { return "foo" }
 
 	absPath, _ := filepath.Abs("foo.csv")
@@ -245,7 +246,7 @@ func (s *MySuite) TestGetPathToAbsFileWithGaugeDataDir(c *C) {
 	var path string
 	config.ProjectRoot = "PROJECT_ROOT"
 	oldGaugeDataDirFn := env.GaugeDataDir
-	defer func(fn func() string) { env.GaugeDataDir = fn }(oldGaugeDataDirFn)
+	defer func(fn func() string	) {env.GaugeDataDir = fn }(oldGaugeDataDirFn)
 	env.GaugeDataDir = func() string { return "foo" }
 
 	path = GetPathToFile("foo.csv")
