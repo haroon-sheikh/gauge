@@ -23,6 +23,7 @@ import (
 	errdetails "google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
@@ -42,6 +43,7 @@ type GrpcRunner struct {
 	IsExecuting  bool
 }
 
+//nolint:staticcheck
 func (r *GrpcRunner) invokeLegacyLSPService(message *gm.Message) (*gm.Message, error) {
 	switch message.MessageType {
 	case gm.Message_CacheFileRequest:
@@ -146,14 +148,8 @@ func (r *GrpcRunner) invokeServiceFor(message *gm.Message) (*gm.Message, error) 
 		response, err := r.RunnerClient.ValidateStep(context.Background(), message.StepValidateRequest)
 		return &gm.Message{MessageType: gm.Message_StepValidateResponse, StepValidateResponse: response}, err
 	case gm.Message_KillProcessRequest:
-		_, err := r.RunnerClient.Kill(context.Background(), message.KillProcessRequest)
-		errStatus, _ := status.FromError(err)
-		if errStatus.Code() == codes.Canceled {
-			// Ref https://www.grpc.io/docs/guides/error/#general-errors
-			// GRPC_STATUS_UNAVAILABLE is thrown when Server is shutting down. Ignore it here.
-			return &gm.Message{}, nil
-		}
-		return &gm.Message{}, err
+		_, _ = r.RunnerClient.Kill(context.Background(), message.KillProcessRequest)
+		return nil, nil
 	default:
 		return nil, nil
 	}
@@ -198,7 +194,7 @@ func (r *GrpcRunner) ExecuteMessageWithTimeout(message *gm.Message) (*gm.Message
 // ExecuteAndGetStatus executes a given message and response without timeout.
 func (r *GrpcRunner) ExecuteAndGetStatus(m *gm.Message) *gm.ProtoExecutionResult {
 	if r.Info().Killed {
-		return &gauge_messages.ProtoExecutionResult{Failed: true,  ErrorMessage:"Runner is not Alive"}
+		return &gauge_messages.ProtoExecutionResult{Failed: true, ErrorMessage: "Runner is not Alive"}
 	}
 	res, err := r.executeMessage(m, 0)
 	if err != nil {
@@ -332,7 +328,7 @@ func StartGrpcRunner(m *manifest.Manifest, stdout, stderr io.Writer, timeout tim
 	}
 	logger.Debugf(true, "Attempting to connect to grpc server at port: %s", port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", host, port),
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(oneGB), grpc.MaxCallSendMsgSize(oneGB)),
 		grpc.WithBlock())
 	logger.Debugf(true, "Successfully made the connection with runner with port: %s", port)

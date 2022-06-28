@@ -32,6 +32,7 @@ import (
 	"github.com/getgauge/gauge/version"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
@@ -252,7 +253,7 @@ func startGRPCPlugin(pd *PluginDescriptor, command []string) (*plugin, error) {
 	}
 	logger.Debugf(true, "Attempting to connect to grpc server at port: %s", port)
 	gRPCConn, err := grpc.Dial(fmt.Sprintf("%s:%s", "127.0.0.1", port),
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(1024*1024*1024), grpc.MaxCallRecvMsgSize(1024*1024*1024)),
 		grpc.WithBlock())
 	if err != nil {
@@ -402,12 +403,12 @@ func GenerateDoc(pluginName string, specDirs []string, startAPIFunc func([]strin
 			logger.Fatalf(true, " %s %s. %s", pd.Name, pd.Version, err.Error())
 		}
 		_, err = p.DocumenterClient.GenerateDocs(context.Background(), getSpecDetails(specDirs))
-		if err != nil {
-			logger.Errorf(true, "Failed to generate docs. %s", err.Error())
+		grpcErr := p.killGrpcProcess()
+		if grpcErr != nil {
+			logger.Errorf(false, "Unable to kill plugin %s : %s", p.descriptor.Name, grpcErr.Error())
 		}
-		err = p.killGrpcProcess()
 		if err != nil {
-			logger.Errorf(false, "Unable to kill plugin %s : %s", p.descriptor.Name, err.Error())
+			logger.Fatalf(true, "Failed to generate docs. %s", err.Error())
 		}
 	} else {
 		port := startAPIFunc(specDirs)
@@ -555,7 +556,7 @@ func getSpecDetails(specDirs []string) *gauge_messages.SpecDetails {
 	sig := &infoGatherer.SpecInfoGatherer{SpecDirs: specDirs}
 	sig.Init()
 	specDetails := make([]*gauge_messages.SpecDetails_SpecDetail, 0)
-	for _, d := range sig.GetAvailableSpecDetails([]string{}) {
+	for _, d := range sig.GetAvailableSpecDetails(specDirs) {
 		detail := &gauge_messages.SpecDetails_SpecDetail{}
 		if d.HasSpec() {
 			detail.Spec = gauge.ConvertToProtoSpec(d.Spec)
