@@ -42,9 +42,7 @@ func (m mockConn) Read(b []byte) (n int, err error) {
 	}
 
 	data := append(proto.EncodeVarint(uint64(len(messageBytes))), messageBytes...)
-	for i := 0; i < len(data); i++ {
-		b[i] = data[i]
-	}
+	copy(b, data)
 	return len(data), nil
 }
 
