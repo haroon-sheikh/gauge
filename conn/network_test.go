@@ -7,10 +7,8 @@
 package conn
 
 import (
-	"errors"
 	"fmt"
 	"net"
-	"reflect"
 	"testing"
 	"time"
 
@@ -172,10 +170,10 @@ func TestGetResponseForGaugeMessageShoudGiveErrorForUnsupportedMessage(t *testin
 
 	_, err := GetResponseForMessageWithTimeout(message, conn, 1*time.Second)
 
-	expected := errors.New("Unsupported Message response received. Message not supported.")
+	expected := "Unsupported Message response received. Message not supported. "
 
-	if reflect.DeepEqual(err, expected) {
-		t.Errorf("expected %v\n got %v", expected, err)
+	if err.Error() != expected {
+		t.Errorf("expected '%s'\n got '%s'", expected, err)
 	}
 
 }
@@ -204,7 +202,7 @@ func TestGetResponseForGaugeMessageShoudErrorWithTimeOut(t *testing.T) {
 	_, err := GetResponseForMessageWithTimeout(message, conn, 1*time.Second)
 
 	expected := fmt.Errorf("Request timed out for Message with ID => %v and Type => StepNameRequest", id)
-	if !reflect.DeepEqual(err, expected) {
+	if err.Error() != expected.Error() {
 		t.Errorf("expected %v\n got %v", expected, err)
 	}
 }
