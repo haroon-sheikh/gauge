@@ -18,7 +18,7 @@ rfc3986==2.0.0
 rich==13.7.1
 setuptools==69.5.1
 six==1.16.0
-twine==5.0.0
+twine==5.1.0
 urllib3==2.2.1
 webencodings==0.5.1
-zipp==3.18.1
+zipp==3.18.2
