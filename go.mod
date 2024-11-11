@@ -1,6 +1,7 @@
 module github.com/getgauge/gauge
 
 go 1.22
+toolchain go1.22.9
 
 require (
 	github.com/apoorvam/goterminal v0.0.0-20180523175556-614d345c47e5
@@ -18,8 +19,8 @@ require (
 	github.com/sourcegraph/jsonrpc2 v0.2.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda
-	google.golang.org/grpc v1.63.2
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1
+	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 )
