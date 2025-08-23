@@ -295,20 +295,30 @@ func (e *parallelExecution) finish() {
 
 func (e *parallelExecution) aggregateResults(suiteResults []*result.SuiteResult) {
 	r := result.NewSuiteResult(ExecuteTags, e.startTime)
-	for _, result := range suiteResults {
-		r.SpecsFailedCount += result.SpecsFailedCount
-		r.SpecResults = append(r.SpecResults, result.SpecResults...)
-		if result.IsFailed {
+	if e.suiteResult != nil {
+		r.PreHookMessages = e.suiteResult.PreHookMessages
+		r.PreHookScreenshotFiles = e.suiteResult.PreHookScreenshotFiles
+		r.PostHookMessages = e.suiteResult.PostHookMessages
+		r.PostHookScreenshotFiles = e.suiteResult.PostHookScreenshotFiles
+	}
+	for _, suiteResult := range suiteResults {
+		r.SpecsFailedCount += suiteResult.SpecsFailedCount
+		r.SpecResults = append(r.SpecResults, suiteResult.SpecResults...)
+		r.PreHookMessages = append(r.PreHookMessages, suiteResult.PreHookMessages...)
+		r.PreHookScreenshotFiles = append(r.PreHookScreenshotFiles, suiteResult.PreHookScreenshotFiles...)
+		r.PostHookMessages = append(r.PostHookMessages, suiteResult.PostHookMessages...)
+		r.PostHookScreenshotFiles = append(r.PostHookScreenshotFiles, suiteResult.PostHookScreenshotFiles...)
+		if suiteResult.IsFailed {
 			r.IsFailed = true
 		}
-		if result.PreSuite != nil {
-			r.PreSuite = result.PreSuite
+		if suiteResult.PreSuite != nil {
+			r.PreSuite = suiteResult.PreSuite
 		}
-		if result.PostSuite != nil {
-			r.PostSuite = result.PostSuite
+		if suiteResult.PostSuite != nil {
+			r.PostSuite = suiteResult.PostSuite
 		}
-		if result.UnhandledErrors != nil {
-			r.UnhandledErrors = append(r.UnhandledErrors, result.UnhandledErrors...)
+		if suiteResult.UnhandledErrors != nil {
+			r.UnhandledErrors = append(r.UnhandledErrors, suiteResult.UnhandledErrors...)
 		}
 	}
 	r.ExecutionTime = int64(time.Since(e.startTime) / 1e6)
