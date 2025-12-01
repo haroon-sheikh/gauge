@@ -11,7 +11,7 @@ jobs:
     name: Create package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -26,7 +26,7 @@ jobs:
           go run build/make.go --distro --all-platforms --skip-windows
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gauge-non-windows-artifact
           path: ./deploy
@@ -35,7 +35,7 @@ jobs:
     name: Create windows package
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -63,7 +63,7 @@ jobs:
           go run build/make.go --distro --bin-dir bin\windows_386
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gauge-windows-artifact
           path: ./deploy
@@ -75,9 +75,9 @@ jobs:
     env:
       GITHUB_TOKEN: '${{ secrets.GAUGEBOT_GITHUB_TOKEN }}'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: gauge-non-windows-artifact
           path: ./deploy
@@ -93,7 +93,7 @@ jobs:
           echo $version > ../version.txt
       
       - name: upload gauge version
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gauge-version
           path: ./version.txt
@@ -104,20 +104,20 @@ jobs:
     env:
       GITHUB_TOKEN: '${{ secrets.GAUGEBOT_GITHUB_TOKEN }}'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: gauge-non-windows-artifact
           path: ./deploy
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: gauge-windows-artifact
           path: ./deploy
 
       - name: Fetch gauge version
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: gauge-version
           path: .
@@ -142,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [gauge-version]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: git fetch --prune --unshallow
 
       - name: Set up Python
@@ -152,7 +152,7 @@ jobs:
           cache: 'pip' # caching pip dependencies
 
       - name: Fetch gauge version
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: gauge-version
           path: .
@@ -175,10 +175,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [gauge-version]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: git fetch --prune --unshallow
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: 'npm'
@@ -186,7 +186,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Fetch gauge version
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: gauge-version
           path: .
@@ -211,16 +211,16 @@ jobs:
     runs-on: windows-latest
     needs: [gauge-version, windows-package]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: git fetch --prune --unshallow
 
       - name: Fetch gauge version
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: gauge-version
           path: .
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: gauge-windows-artifact
           path: ./deploy
