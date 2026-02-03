@@ -104,19 +104,7 @@ func (e *specExecutor) execute(executeBefore, execute, executeAfter bool) *resul
 				logger.Fatalf(true, "Failed to resolve Specifications : %s", err.Error())
 			}
 			e.specResult.AddScenarioResults(results)
-			scnMap := make(map[int]bool)
-			for _, s := range tableDriven {
-				if _, ok := scnMap[s.Span.Start]; !ok {
-					scnMap[s.Span.Start] = true
-				}
-				r, err := e.executeScenario(s)
-				if err != nil {
-					logger.Fatalf(true, "Failed to resolve Specifications : %s", err.Error())
-				}
-				e.specResult.AddTableDrivenScenarioResult(r, gauge.ConvertToProtoTable(s.DataTable.Table),
-					s.ScenarioDataTableRowIndex, s.SpecDataTableRowIndex, s.SpecDataTableRow.IsInitialized())
-			}
-			e.specResult.ScenarioCount += len(scnMap)
+			e.executeScenarioTableDrivenScenarios(tableDriven)
 		} else {
 			err := e.executeSpec()
 			if err != nil {
@@ -152,16 +140,38 @@ func (e *specExecutor) executeSpec() error {
 	nonTableRelatedScenarios, tableRelatedScenarios := parser.FilterTableRelatedScenarios(e.specification.Scenarios, func(s *gauge.Scenario) bool {
 		return s.SpecDataTableRow.IsInitialized()
 	})
-	res, err := e.executeScenarios(nonTableRelatedScenarios)
+
+	others, scenarioTableDriven := parser.FilterTableRelatedScenarios(nonTableRelatedScenarios, func(s *gauge.Scenario) bool {
+		return s.ScenarioDataTableRow.IsInitialized()
+	})
+
+	res, err := e.executeScenarios(others)
 	if err != nil {
 		return err
 	}
 	e.specResult.AddScenarioResults(res)
+	e.executeScenarioTableDrivenScenarios(scenarioTableDriven)
 	err = e.executeTableRelatedScenarios(tableRelatedScenarios)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (e *specExecutor) executeScenarioTableDrivenScenarios(scenarios []*gauge.Scenario) {
+	scnMap := make(map[int]bool)
+	for _, s := range scenarios {
+		if _, ok := scnMap[s.Span.Start]; !ok {
+			scnMap[s.Span.Start] = true
+		}
+		r, err := e.executeScenario(s)
+		if err != nil {
+			logger.Fatalf(true, "Failed to resolve Specifications : %s", err.Error())
+		}
+		e.specResult.AddTableDrivenScenarioResult(r, gauge.ConvertToProtoTable(s.DataTable.Table),
+			s.ScenarioDataTableRowIndex, s.SpecDataTableRowIndex, s.SpecDataTableRow.IsInitialized())
+	}
+	e.specResult.ScenarioCount += len(scnMap)
 }
 
 func (e *specExecutor) initSpecDataStore() *gauge_messages.ProtoExecutionResult {
@@ -320,7 +330,7 @@ func (e *specExecutor) executeScenario(scenario *gauge.Scenario) (*result.Scenar
 			e.specResult.ScenarioSkippedCount++
 		}
 
-		if !(shouldRetry && scenarioResult.GetFailed()) {
+		if !shouldRetry || !scenarioResult.GetFailed() {
 			break
 		}
 	}

@@ -59,42 +59,7 @@ type RunnerInfo struct {
 	LspLangId           string
 	GRPCSupport         bool
 	ConceptMessages     bool
-	Killed				bool
-}
-
-func ExecuteInitHookForRunner(language string) error {
-	if err := config.SetProjectRoot([]string{}); err != nil {
-		return err
-	}
-	runnerInfo, err := GetRunnerInfo(language)
-	if err != nil {
-		return err
-	}
-	var command []string
-	switch runtime.GOOS {
-	case "windows":
-		command = runnerInfo.Init.Windows
-	case "darwin":
-		command = runnerInfo.Init.Darwin
-	default:
-		command = runnerInfo.Init.Linux
-	}
-
-	languageJSONFilePath, err := plugin.GetLanguageJSONFilePath(language)
-	if err != nil {
-		return err
-	}
-
-	runnerDir := filepath.Dir(languageJSONFilePath)
-	logger.Debugf(true, "Running init hook command => %s", command)
-	writer := logger.NewLogWriter(language, true, 0)
-	cmd, err := common.ExecuteCommand(command, runnerDir, writer.Stdout, writer.Stderr)
-
-	if err != nil {
-		return err
-	}
-
-	return cmd.Wait()
+	Killed              bool
 }
 
 func GetRunnerInfo(language string) (*RunnerInfo, error) {
